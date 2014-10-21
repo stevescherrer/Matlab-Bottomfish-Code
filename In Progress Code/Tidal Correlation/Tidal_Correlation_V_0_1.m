@@ -1,9 +1,6 @@
 %%%%Program to correlate reciever detections with tidal data
 %%%%Written by Stephen Scherrer 23 September 2013
 
-%%%REMEMBER THAT TIME I CHNAGED THIS TO LEARN SHIT ABOUT GITHUB? THAT TIME
-%%%IS NOW
-
 tic
 
 %%Program relies on BottomFish Variable created from latest version of
