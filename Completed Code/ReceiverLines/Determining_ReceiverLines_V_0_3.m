@@ -1,4 +1,11 @@
+dbstop if error
+%%%%PROBLEMS WITH HEIGHT OF FENCE????
+
 %%For Determining Placement of Receiver line
+
+%Written by Stephen Scherrer
+    %All Rights Preserved, All Wrongs Feel Right
+
 
 %%Pull bathymetry transect from Geomap App using
 %%Basemaps>RegionalGrid>PacificRegion>Hawaii>SOESTMainHawaiianIslandsMultiBeamSynthesis50M
@@ -7,17 +14,18 @@
 
 %%%%%%%%USER DEFINED PARAMETERS%%%%%%%%%%
 UpperDepthLimit=-20; %in meters
-LowerDepthLimit=-400; %in meters
-HeightOfReceiverOffBottom=30; %in meters
-Receiver12Percent=600; %Radius of receiver detection sphere where 12.5 percent of pings are picked up from range testing data
-Receiver25Percent=700; %Radius of receiver detection sphere where 25 percent of pings are picked up from range test data
-NumberOfReceiversToPlace=4; 
-AcceptableDetectionDistanceFromCenterOfReceiver=[]; %%Distance Away from center of Receiver that tags must still be heard. if blank, assumed to be 50% of total radius
+LowerDepthLimit=-800; %in meters
+HeightOfReceiverOffBottom=25; %in meters
+Receiver12Percent=650; %Radius of receiver detection sphere where 12.5 percent of pings are picked up from range testing data
+Receiver25Percent=550; %Radius of receiver detection sphere where 25 percent of pings are picked up from range test data
+NumberOfReceiversToPlace=[]; 
+MinimumHeightOfFence=450; %%Minimum distance Away from bottom that tags are no longer heard. if blank, assumed to be 50% of total radius of 12 percent detection sphere+the depth of receiver to the bottom (more conservative than 25%. 
 SwimSpeedOfStudySpecies=.5; %In m/s
 
 %%%%%%%End USER DEFINED PARAMETERS%%%%%%%
 
-IdealizedReceiverSpacing=(sqrt(2)/2)*Receiver12Percent;
+
+IdealizedReceiverSpacing=(1/sqrt(2))*Receiver12Percent;
 FixedNumerOfReceivers=[];
 FixedNumberOfReceiversRequired=[];
 IdealReceiverSpacing=Receiver12Percent.*sqrt(2);
@@ -39,6 +47,12 @@ end
 TransectBounds(:,1)=TransectBounds(:,1)-TransectBounds(1,1);
 TransectIndex=find((Elevationm<UpperDepthLimit)+(Elevationm>=LowerDepthLimit)==2);
 TransectIndex=[min(TransectIndex)-1;TransectIndex;max(TransectIndex)+1];
+
+while TransectIndex(1) <= 0; % Removing bad indecies. if you start a fence at depth, negative or zero indicies will be produced because of last line. This rectifies that situation
+    TransectIndex(1) = [];
+end
+
+
 
 TransectBounds=[(Distancekm(TransectIndex).*1000) , Elevationm(TransectIndex), zeros(length(TransectIndex),3), Latitude(TransectIndex), Longitude(TransectIndex)]; %Builds new matrix Transect Bounds
 
@@ -79,7 +93,7 @@ ReceiverLineIndex=IndexStart:IndexStop;
 ReceiverLine=TransectBounds(ReceiverLineIndex,:); %for only putting in distance that need to be spanned by the receiver fence
 [R,~]=size(ReceiverLine); %determining maximum ReceiverLine index
 if isempty(NumberOfReceiversToPlace); % if there is no restriction no receivers specified for number of receivers to place 
-    NumberOfReceiversToPlace=round((((ReceiverLine(R,5)-ReceiverLine(1,5))+(2*IdealizedReceiverSpacing)+2*(Receiver12Percent-Receiver25Percent)))./(2.*IdealizedReceiverSpacing)); %determines the ideal number of receivers to place
+    NumberOfReceiversToPlace=round((ReceiverLine(R,5)-ReceiverLine(1,5)+(2*IdealizedReceiverSpacing)+(2*Receiver12Percent-Receiver25Percent))./(2*IdealizedReceiverSpacing));
 end
 DistancesOfReceiverLine=linspace(ReceiverLine(1,5),ReceiverLine(R,5),NumberOfReceiversToPlace); %places those receivers evenly
 
@@ -150,25 +164,36 @@ csvwrite('FenceLine.csv',FenceLine);
 [R,~]=size(FenceLine);
 RadiusOfOverlappingSphere=(sqrt((Receiver12Percent.^2)-((FenceLine(R,2)/2)^2)));
 
-if isempty(AcceptableDetectionDistanceFromCenterOfReceiver)==1;
-    AcceptableDetectionDistanceFromCenterOfReceiver=Receiver12Percent*(.50);
+if isempty(MinimumHeightOfFence)==1;
+    MinimumHeightOfFence=Receiver12Percent*.50;
+    disp(['The height of the proposed fence is ', num2str(MinimumHeightOfFence+HeightOfReceiverOffBottom), ' meters.'])
+else
+    MinimumHeightOfFence=MinimumHeightOfFence-HeightOfReceiverOffBottom;
 end
 
-LengthOfAcceptableDetection=2*sqrt(RadiusOfOverlappingSphere^2-AcceptableDetectionDistanceFromCenterOfReceiver^2);
+LengthOfAcceptableDetection=2*sqrt(RadiusOfOverlappingSphere^2-MinimumHeightOfFence^2);
 
 if isreal(RadiusOfOverlappingSphere)==0;
     disp ('Insufficient receivers to place a fence')
 else
-    if RadiusOfOverlappingSphere<=AcceptableDetectionDistanceFromCenterOfReceiver;
+    if RadiusOfOverlappingSphere<=MinimumHeightOfFence;
         disp('Insufficient receivers to place a fence')
     else
         MaximumTagInterval=LengthOfAcceptableDetection./SwimSpeedOfStudySpecies;
         disp(['The maximum ping interval in this configuration is ' , num2str(MaximumTagInterval), ' seconds'])
+        if RadiusOfOverlappingSphere<HeightOfReceiverOffBottom;
+            disp('Insufficient receivers to place a fence. There is a hole at the bottom of the fence')
+        end
     end
 end
 
+clearvars -except Latitude Longitude Elevationm Distancekm FenceLine
 
 %%%%%%%%%%VERSION%HISTORY%%%%%%%%%%%%%
+%%V_0_4: Changed critereon of Acceptable Detection distance from center if
+%%blank to 50% of total receiver height. Adjusted rounding formula for
+%%calculating ideal receiver line. Added fence height. Added code for
+%%determing gaps at bottom of fence. 
 %%V_0_3: Debugged and working????
 %%V_0_2: Rewrote a bunch of logic after talking to astrid. this stuff sort
 %%of makes sense now...I think.
