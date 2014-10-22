@@ -1,11 +1,11 @@
-
-
 %%Building a working matrix (BottomFish) for all individuals with metadata to be the basis of all
 %%future code.
 
 %%Code stitched together from other projects on 17 Septemeber 2013
 %%Written by Stephen Scherrer
 
+%%updates in v_0.4
+%%removed detections for fish that is clearly dead (TAG ID 37969)
 
 %%%%READ ME%%%%
 %%%%Before running code, a matrix needs to be constructed from VUE cvs file 
@@ -57,6 +57,8 @@ for i=1:length(Tags) %%indexes all Tag IDs
     BottomFish=[BottomFish;x(T,:)]; %%Fills in variable BottomFish (note capitalization) with data arranged first by Tag ID, then by date time
 end
 clearvars i x R T %%Clears variables used in previous loop
+
+BottomFish=BottomFish(BottomFish(:,1)~=37969,:);
 
 
 %%Determining that previous loop worked
@@ -258,6 +260,13 @@ BottomFish(i,7)=2;
     %%%%%%%%%ADD ANY ADDITIONAL TAGS
 end
 end
+
+
+%%%%The proceding code is for all Bottom Fish tagged in association with
+%%%%the project. All other detections (fish from other projects) are
+%%%%removed with the following
+BottomFish=BottomFish(BottomFish(:,7)>0,:);
+clear Bottomfish %%clears out Bottomfish variable
 
 Sex=NaN(length(Tags),1);
 %Mass=NaN(length(Tags),1);
