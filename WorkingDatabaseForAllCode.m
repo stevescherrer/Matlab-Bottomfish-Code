@@ -787,7 +787,7 @@ end
 %%%%Start Added April 28 2014
 
 %Creating TagDate Variable
-Date=(datenum(2012,08,18)-min(datenum(Date)))+datenum(Date);
+Date=(datenum(2012,08,18,14,09,00)-min(datenum(TaggingDateandTimeUTC)))+datenum(TaggingDateandTimeUTC);
 TagDate=[VemTagCode, datenum(Date)];
 %Creating a 9th and 10th Column for BottomFish Workspace 9th column for Tag Date, 10th for anticipated transmitter death.
 Addendum=nan(length(BottomFish),2); %creates additional columns for BottomFish variable
