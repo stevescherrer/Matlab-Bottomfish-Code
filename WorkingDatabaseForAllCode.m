@@ -49,7 +49,7 @@ tic
 dbstop if error
 
 %%%%Clearing Data that is unused
-clearvars Area AudioLogFile BladderVented Cannulation Capture_Lat_Deg Capture_Lon_Degrees Capture_Lat_min Capture_Lon_min Cohort Comments Conventional DNAClip Date Detections20130713 Dropshot EyesPopped Gutsample ID Length Notes PCLcm Photo PhotoName PointofIncision Recaptured Stomach Everted Tagger TissueSample VarName36 VarName37 VemTagType VemTagno VemTagType Video 
+clearvars Area AudioLogFile BladderVented Cannulation Capture_Lat_Deg Capture_Lon_Degrees Capture_Lat_min Capture_Lon_min Cohort Comments Conventional DNAClip Detections20130713 Dropshot EyesPopped Gutsample ID Length Notes PCLcm Photo PhotoName PointofIncision Recaptured Stomach Everted Tagger TissueSample VarName36 VarName37 VemTagType VemTagno VemTagType Video 
 
 %%%%Converting CSV file into a working matrix
 
@@ -431,9 +431,12 @@ for i=1:length(BottomFish);
     end
 end
 
+BottomFish=unique(BottomFish);
+
 %clearvars i AdjustedReceiverDeploymentsAndRecoveries DateTime FLcm Receiver ReceiverDates ReceiverDeploymentsAndRecoveries Sex Sex1 Species StomachEverted TagID Tags TempReceiver TempSex TempSex1 TempTransmitter TemporaryReceiverDates Time Transmitter VR2W VarName1 VemTagCode a ans
 
 save BottomFish 
+
 toc
 
 %%%%%Notes on Outputed File
