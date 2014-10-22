@@ -7,11 +7,10 @@
 
 %%All Rights Preserved All Wrongs Traversed
 
-clear all
+
 tic
 dbstop if error
-addpath '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files'
-
+ 
  
 %%%%%%%%Building ReceiverDates Matrix%%%%%%%%
 
@@ -23,20 +22,7 @@ addpath '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files'
 %%A COMMON MATRIX USED IN MANY OTHER CODES. RUN THIS AFTER EVERY DATA
 %%DOWNLOAD FROM THE FIELD TO UPDATE DATABASE.
 
-%%NOTES ON OUTPUT FILES:
-
-%%RecieverDates
-    %%Column 1=Reciever Location
-    %%Column 2=Reciever Number
-    %%Column 3=Deployment Date
-    %%Column 4=Recovery Date
-    %%Column 5=Deployment Latitude (prefix)
-    %%Column 6=Deployment Latitude (degree minutes)
-    %%Column 7=Deployment Longitude (prefix)
-    %%Column 8=Deployment Longitude (degree minutes)
-    %%Column 9=Deployment Longitude (decimal degrees)
-    %%Column 10=Deployment Latitude (decimal Degrees) 
-    
+%%NOTES ON OUTPUT FILE:
 %%RecieverDates
     %%Column 1=Reciever Location
     %%Column 2=Reciever Number
@@ -49,12 +35,6 @@ addpath '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files'
     %%Column 9=Deployment Longitude (decimal degrees)
     %%Column 10=Deployment Latitude (decimal Degrees) 
 
-
-    
-    %%NOT YET WORKING
-    %[ID,Date,Time,Species,Conventional,VemTagType,VemTagNo,VemTagCode,FL,PCL,Cohort,Area,Capture_Lat_Deg,Capture_Lat_min,Capture_Lon_Degrees,Capture_Lon_min,StomachEverted,EyesPopped,BladderVented,PointOfIncision,DNAClip,Cannulation,Sex,Video,Photo,PhotoName,AudioLogFile,Dropshot,TissueSample,GutSample,Tagger,Notes,Recaptured,Detections20130713,Comments,VarName36,VarName37]=textread('Bottomfish_Tag_Master.csv','%s,%s,%s,%s,%n,%s,%n,%n,%n,%s,%n,%s,%n,%n,%n,%n,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,$s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s ','delimiter',',','headerlines',1);
-    %[DateTime, Receiver, Transmitter, TransmitterName, TransmitterSerial, SensorValue, SensorUnit, StationName, Latitude, Longitude]=textread('VUE_Export.csv','%s, %n, %n, %s, %s, %n, %s, %s, %n, %n', 'delimiter', ',', 'headerlines', 1);
-    %[Serviced, Station_NO, CONSECUTIVE_DEPLOY_NO, DEPLOYMENT_DATE, DEPLOYMENT_TIME, RECOVERY_DATE, RECOVERY_TIME, Downloaded, IN_DATA_SET, Lat_deg, Lat_min, Lon_deg, Lon_min, BOTTOM_DEPTH, VR2_SERIAL_NO, AR_SERIAL_NO, AR_EXPECTED_BATTERY_LIFE, AR_VOLTAGE_AT_DEPLOY, AR_RELEASE_CODE,TempLogger, STEVES_ARBITRARY_LOCATION_CODES,DEPLOYED_BY,RecoveredBy, COMMENTS_DEPLOYMENT, COMMENTS_RECOVERY, RND1, RND2]=textread('DEPLOYMENT_RECOVERY_LOG.csv', '%s%s%n%n%n%n%n%s%n%n%n%n%n%n%n%n%n%n%n%n%n%s%s%s%s%s%s','delimiter',',','headerlines',1);
     
     DateAdjustment=datenum(2011,10,01)-min(DEPLOYMENT_DATE); %determines date offset from any other date format
     AdjustedDeploymentDates=DEPLOYMENT_DATE+DateAdjustment; %creates new variable with this date adjustment for deployments
@@ -133,6 +113,8 @@ clearvars Area AudioLogFile BladderVented Cannulation Capture_Lat_Deg Capture_Lo
 %%%%Converting CSV file into a working matrix
 
 %%Converting detection dates to datenumbers
+DateTime=VarName1;
+DateTime(1)=[];
 DateTime=datenum(DateTime);
 %%standardizing detection dates to matlab format if in another date format
 DateTime(:,1)=DateTime(:,1)+(datenum(2012,04,05,8,43,0)-min(DateTime)); %Assumes minimum value of dataset is 08/13/2011
@@ -210,6 +192,36 @@ end
 %%%%%cost? OH THE HUMANITY!
 
 %%accounting for dead fish
+%using dead fish to analyze receiver temporal data
+DeadFish=BottomFish(BottomFish(:,1)==37969,:); %pulls out detections for fish 37969
+DeadFishTimeBins=zeros(2,25); %makes matrix for times 24 hour days (extra bin for 24th hour to be removed later. 
+DeadFishTimeBins(1,:)=linspace(0,1,25); %creates 25 time bins for counting hours
+DeadFishDates=round(max(DeadFish(:,2)+.5))-1:round(min(DeadFish(:,2)+.5)-1); %for determining days of study period from earliest detection date to latest
+DeadFishDateMatrix=zeros(round(max(DeadFish(:,2))-min(DeadFish(:,2))+.5),DeadFishTimeBins); %makes a matrix 25 columns long and length of number of days in study
+for i=min(DeadFish(:,2)):max(DeadFish(:,2)); %indexes total nubmer of days dead fish transmitter has been transmitting
+    DeadFishDateTimeBins=DeadFish(sum((DeadFish(:,2)>i-1)+(DeadFish(:,2)<i))==2,:); %pulls records associated with a single date
+    for a=2:length(DeadFishDateTimeBins);%indexes those records that occured that day
+         DeadFishTimes=DeadFishDateTimeBins(:,2)-(round(DeadFishDateTimeBins(:,2)+.5)-1); %subtracts full date and time from just the date to leave just time data
+         DeadFishTimeDateMatrix(i,a)=sum(DeadFishTimes>=DeadFishTimeBins(1,a-1)+DeadFishTimes<DeadFishTimeBins(a)==2)./length(DeadFishDateTimeBins); %calculates frequency of detections of dead fish by hour and places them in appropriate bins as a fraction of 1
+         [r,~]=size(DeadFishTimeDateMatrix); %finds number of dates in DeadFishTimeMatrix
+         DeadFishTimes(2,a)=sum(DeadFishTimeDateMatrix(:,a))./r; %Divides summed detection rates by total number of days to return a fraction of 1 again.
+    end
+end
+DeadFishTimeDateMatrix(:,25)=[]; % removes bin associated with hour 25 since that doesn't exist
+p=anova1(DeadFishTimeDateMatrix); %performs 1 way ANOVA on daily detection ratios 
+DeadFishTimeBins(:,25)=[];%removes 25th hour bin because there is no 25th hour...
+figure %plots new figure
+hist(DeadFishTimes(2,:),DeadFishTimes(1,:)); %plots histogram of detection frequency where DeadFishTimes(2,:) is proportion of detections for an hour bin and DeadFishTimes(1,:) is the hour bin. 
+datetick %adds hour ticks
+xlabel('Hour Bin') %labels x axis
+ylabel('Frequency of Received Transmissions') %labels y axis
+title('Percentage of Transmissions Received from a Tag in a Very Dead Fish By the Hour They Occured') %titles figure
+mTextBox=uicontrol('style','text'); %creates a text box
+TextBoxText=['One Way Anova P=',num2str(p)];
+set(mTextBox,'string',TextBoxText)%creates a text box with anova results
+print('Figure 1')
+
+%removing the dead fish
 BottomFish=BottomFish(BottomFish(:,1)~=37969,:); %%This fish is very dead right next to a receiver.
 
 
@@ -573,6 +585,11 @@ toc
         
         
 %%%%%%%%%%%%%%%%%%%%Version Updates%%%%%%%%%%%%%%%%%%%%%%
+%%Updates in V_1.6
+    %%in V_1.5, tried to automatically import data files but this proved
+    %%problematic so it has been removed until it can be debugged. Added
+    %%code to use tag 37969, which is inside a very dead fish, to look at
+    %%temporal differences in receiver detection range
 %%Updats in V_1.2
     %%removes the same detections if vue file imported too many times. not
     %%sure how this wasn't done sooner...
