@@ -217,7 +217,7 @@ BottomFish(i,7)=2;
 elseif BottomFish(i,1)==37984
 BottomFish(i,7)=2;
 elseif BottomFish(i,1)==57445
-SandbarTemp=BottomFish(i,:);
+BottomFish(i,7)=6;
 elseif BottomFish(i,1)==57446
 BottomFish(i,7)=5;
 elseif BottomFish(i,1)==57447
@@ -286,4 +286,31 @@ for i=1:length(Tags);
 end
 
 
+clearvars Sex Length i a Tags TagSizeSex BOTTOMFISHTAGDATA
+
+
+%% Replacing unknown Sexes in column 9 from tags with no meta data with zero instead of NaN
+for i=1:length(BottomFish)
+    if isnan(BottomFish(i,9))==1
+        BottomFish(i,9)=0;
+    end
+end
+
+save BottomFish i
 toc
+
+%%%%%Notes on Output File
+%%%%%Name: BottomFish
+    %%Column 1=Tag ID
+    %%Column 2=Date&Time
+    %%Column 3=Zeros
+    %%Column 4=Reciever ID
+    %%Column 5=Location of Reciever (1=Barber Flats, 2=Diamond Head, 3=Kaena
+        %%Pocket, 4=Kahuku, 5=Ko Olina, 6=Makapuu[in BAFR],7=Makapuu S[Out of
+        %%BAFR], 8=Makapuu N, 9=Mokapu, 10=Powerplant, 11=Waianae)
+    %%Column 6 (Created in following section)=Presence in BAFR or out of BAFR.
+        %%1 indicates individual detected in BAFR, 0 indicates detection outside
+        %%BAFR
+    %%Column 7=Species (1=Ehu, 2=Opaka, 3=Dogfish, 4=Ges, 5=Kale, 6=Sandbar, 0=unknown)
+    %%Column 8=Size (cm)
+    %%Column 9=Sex (1=Female, 2=Male, 0=Unknown)
