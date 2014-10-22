@@ -4,8 +4,8 @@
 %%Code stitched together from other projects on 17 Septemeber 2013
 %%Written by Stephen Scherrer
 
-%%updates in v_0.4
-%%removed detections for fish that is clearly dead (TAG ID 37969)
+%%updates in v_0.5
+%%added notation for BOTTOMFISHTAGDATA initial file
 
 %%%%READ ME%%%%
 %%%%Before running code, a matrix needs to be constructed from VUE cvs file 
@@ -15,6 +15,25 @@
 %%%%To pull tag codes and separate date and time, use function code
 %%%%=(Right(cell number,number of digits to keep)) and 
 %%%%=(Left(cell number,number of digits to keep)) respectively and sort into their own columns
+
+%%Import from VUE to excell
+%%Convert column A from date/time to number
+%%Column I= =(left(C1,5))
+%%Cut paste and drag down this formula
+%%Column J= =RIGHT(B1,6)
+%%Drag down copy paste
+%%Column K='= if(H1="Barber Flats",1,if(H1="Diamond Head",2,if(H1="Kaena
+%%Pocket",3,if(H4="Kahuku",4,if(H1="Ko Olina",5,if(H1="Makapuu[in
+%%BRFA]",6,if(H4="Makapuu",8,if(H1="Mokapu",9,if(H1="Powerplant",10,if(H1="Waianae",11,0)))))))))))
+
+%%%%BOTTOMFISHTAGDATA
+%%Column 1=tag number
+%%Column 2=date
+%%Column 3=Time
+%%Column 4=Reciever ID
+%%Column 5=Location (1=Barber Flats, 2=Diamond Head, 3=Kaena
+    %%Pocket, 4=Kahuku, 5=Ko Olina, 6=Makapuu[in BAFR],7=Makapuu S[Out of
+    %%BAFR], 8=Makapuu N, 9=Mokapu, 10=Powerplant, 11=Waianae)
 
 
 %%Additionally build a TagSizeSex database CSV file by taking master file
