@@ -7,10 +7,11 @@
 
 %%All Rights Preserved All Wrongs Traversed
 
-
+clear all
 tic
 dbstop if error
- 
+addpath '/Users/stephenscherrer/Dropbox/Lab Folder/Oahu Receiver Data Files'
+
  
 %%%%%%%%Building ReceiverDates Matrix%%%%%%%%
 
@@ -22,7 +23,20 @@ dbstop if error
 %%A COMMON MATRIX USED IN MANY OTHER CODES. RUN THIS AFTER EVERY DATA
 %%DOWNLOAD FROM THE FIELD TO UPDATE DATABASE.
 
-%%NOTES ON OUTPUT FILE:
+%%NOTES ON OUTPUT FILES:
+
+%%RecieverDates
+    %%Column 1=Reciever Location
+    %%Column 2=Reciever Number
+    %%Column 3=Deployment Date
+    %%Column 4=Recovery Date
+    %%Column 5=Deployment Latitude (prefix)
+    %%Column 6=Deployment Latitude (degree minutes)
+    %%Column 7=Deployment Longitude (prefix)
+    %%Column 8=Deployment Longitude (degree minutes)
+    %%Column 9=Deployment Longitude (decimal degrees)
+    %%Column 10=Deployment Latitude (decimal Degrees) 
+    
 %%RecieverDates
     %%Column 1=Reciever Location
     %%Column 2=Reciever Number
@@ -35,6 +49,12 @@ dbstop if error
     %%Column 9=Deployment Longitude (decimal degrees)
     %%Column 10=Deployment Latitude (decimal Degrees) 
 
+
+    
+    %%NOT YET WORKING
+    %[ID,Date,Time,Species,Conventional,VemTagType,VemTagNo,VemTagCode,FL,PCL,Cohort,Area,Capture_Lat_Deg,Capture_Lat_min,Capture_Lon_Degrees,Capture_Lon_min,StomachEverted,EyesPopped,BladderVented,PointOfIncision,DNAClip,Cannulation,Sex,Video,Photo,PhotoName,AudioLogFile,Dropshot,TissueSample,GutSample,Tagger,Notes,Recaptured,Detections20130713,Comments,VarName36,VarName37]=textread('Bottomfish_Tag_Master.csv','%s,%s,%s,%s,%n,%s,%n,%n,%n,%s,%n,%s,%n,%n,%n,%n,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,$s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s ','delimiter',',','headerlines',1);
+    %[DateTime, Receiver, Transmitter, TransmitterName, TransmitterSerial, SensorValue, SensorUnit, StationName, Latitude, Longitude]=textread('VUE_Export.csv','%s, %n, %n, %s, %s, %n, %s, %s, %n, %n', 'delimiter', ',', 'headerlines', 1);
+    %[Serviced, Station_NO, CONSECUTIVE_DEPLOY_NO, DEPLOYMENT_DATE, DEPLOYMENT_TIME, RECOVERY_DATE, RECOVERY_TIME, Downloaded, IN_DATA_SET, Lat_deg, Lat_min, Lon_deg, Lon_min, BOTTOM_DEPTH, VR2_SERIAL_NO, AR_SERIAL_NO, AR_EXPECTED_BATTERY_LIFE, AR_VOLTAGE_AT_DEPLOY, AR_RELEASE_CODE,TempLogger, STEVES_ARBITRARY_LOCATION_CODES,DEPLOYED_BY,RecoveredBy, COMMENTS_DEPLOYMENT, COMMENTS_RECOVERY, RND1, RND2]=textread('DEPLOYMENT_RECOVERY_LOG.csv', '%s%s%n%n%n%n%n%s%n%n%n%n%n%n%n%n%n%n%n%n%n%s%s%s%s%s%s','delimiter',',','headerlines',1);
     
     DateAdjustment=datenum(2011,10,01)-min(DEPLOYMENT_DATE); %determines date offset from any other date format
     AdjustedDeploymentDates=DEPLOYMENT_DATE+DateAdjustment; %creates new variable with this date adjustment for deployments
@@ -113,8 +133,6 @@ clearvars Area AudioLogFile BladderVented Cannulation Capture_Lat_Deg Capture_Lo
 %%%%Converting CSV file into a working matrix
 
 %%Converting detection dates to datenumbers
-DateTime=VarName1;
-DateTime(1)=[];
 DateTime=datenum(DateTime);
 %%standardizing detection dates to matlab format if in another date format
 DateTime(:,1)=DateTime(:,1)+(datenum(2012,04,05,8,43,0)-min(DateTime)); %Assumes minimum value of dataset is 08/13/2011
