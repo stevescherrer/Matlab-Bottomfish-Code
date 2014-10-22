@@ -296,7 +296,9 @@ for i=1:length(BottomFish)
     end
 end
 
-save BottomFish i
+clear i
+
+save BottomFish 
 toc
 
 %%%%%Notes on Output File
