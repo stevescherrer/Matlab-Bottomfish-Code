@@ -875,6 +875,10 @@ save BottomFish
         
         
 %%%%%%%%%%%%%%%%%%%%Version Updates%%%%%%%%%%%%%%%%%%%%%%
+%%Updates in V_2.0
+    %Code now part of GitHub. Moved all prior revisions to file
+    %"WorkingDatabaseForAllCode.m" with revision numbers in summary and
+    %comments. Matlab no longer thinks this is a function. 
 %%Updates in V_1.9
     %Added automatic importing from file paths.
 %%Updates in V_1.8
