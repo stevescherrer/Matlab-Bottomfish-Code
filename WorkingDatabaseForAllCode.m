@@ -1,5 +1,5 @@
 %%Building a working matrix (BottomFish) for all individuals with metadata to be the basis of all
-%%future code.
+%%future code. Organized By Tag number followed by Detection Date
 
 %%Code stitched together from other projects on 17 Septemeber 2013
 %%Written by Stephen Scherrer
@@ -81,13 +81,13 @@ TempTransmitter=Transmitter;
 TempTransmitter(1)=[];
 [~,Suffix]=strtok(TempTransmitter,'-');
 [~,TagIDWithHyphen]=strtok(Suffix,'-');
-[Tags,~]=strtok(TagIDWithHyphen,'-');
-TagID=nan(length(Tags),1);
+[TagsSorted,~]=strtok(TagIDWithHyphen,'-');
+TagID=nan(length(TagsSorted),1);
 
 %For some reason TagID was brought in as text, this converts back
 %to a number so a matrix can be formed.
-for i = 1:length(Tags)
-TagID(i) = str2num(cell2mat(Tags(i)));
+for i = 1:length(TagsSorted)
+TagID(i) = str2num(cell2mat(TagsSorted(i)));
 end
 
 clearvars 'Prefix' 'Suffix' 'SuffixNoHyphen' 'TagIDWithHyphen' 'Hyphen' 'Tags' 'i';
@@ -102,8 +102,8 @@ Bottomfish=BF(Index,:);
 clear BF Index
 
 %%Indexing a list of unique Tag IDs
-Tags=unique(Bottomfish(:,1));
-Tags=Tags(isnan(Tags)==0); %% I have no idea why this line is necessary.. for some reason the Tag ID list produces a shit ton of NaNs
+TagsSorted=unique(Bottomfish(:,1));
+TagsSorted=TagsSorted(isnan(TagsSorted)==0); %% I have no idea why this line is necessary.. for some reason the Tag ID list produces a shit ton of NaNs
 
 
 %%Modifying Detection Times from GMT to HST
@@ -113,8 +113,8 @@ Bottomfish(:,2)=Bottomfish(:,2)-.10; %%adjusts times from BF file from GMT to HI
 
 BottomFish=[];
 
-for i=1:length(Tags) %%indexes all Tag IDs
-    x=Bottomfish(Bottomfish(:,1)==Tags(i),:); %%Pulls data from master file one ID at a time
+for i=1:length(TagsSorted) %%indexes all Tag IDs
+    x=Bottomfish(Bottomfish(:,1)==TagsSorted(i),:); %%Pulls data from master file one ID at a time
     [R,T]=sort(x(:,2));  %%Sorts data by Date/Time and indexes
     BottomFish=[BottomFish;x(T,:)]; %%Fills in variable BottomFish (note capitalization) with data arranged first by Tag ID, then by date time
 end
@@ -216,13 +216,13 @@ end
 %   BottomFish(BottomFish(:,3)==ReceiverDeploymentsAndRecoveries(i,2),4)=ReceiverDeploymentsAndRecoveries(i,1);
 %end
 
-[A,L]=find(BottomFish(:,4)==9);
-if A>0;
-    disp ('finally found a fish in BRFA!, follow the following fish through the rest of this process')
-    L(1)
-else
-    disp ('No Fish in BRFA. Theres no way this is possible so find fish with tag ID=57445')
-end
+%[A,L]=find(BottomFish(:,4)==9);
+%if A>0;
+ %   disp ('finally found a fish in BRFA!, follow the following fish through the rest of this process')
+  %  L(1)
+%else
+ %   disp ('No Fish in BRFA. Theres no way this is possible so find fish with tag ID=57445')
+%end
 
 
 %%If an individual is in BRFA column 6=1, if outside, column 6=0
@@ -431,9 +431,39 @@ for i=1:length(BottomFish);
     end
 end
 
-BottomFish=unique(BottomFish);
 
-%clearvars i AdjustedReceiverDeploymentsAndRecoveries DateTime FLcm Receiver ReceiverDates ReceiverDeploymentsAndRecoveries Sex Sex1 Species StomachEverted TagID Tags TempReceiver TempSex TempSex1 TempTransmitter TemporaryReceiverDates Time Transmitter VR2W VarName1 VemTagCode a ans
+%%Removing duplicate detections
+DatesUnsorted=unique(BottomFish(:,2));
+DatesSorted=sort(DatesUnsorted);
+
+BFD=[];
+for i=1:length(DatesSorted);
+    BFD=[BFD;BottomFish(BottomFish(:,2)==DatesSorted(i),:)];
+end
+
+TagsUnsorted=unique(BFD(:,1));
+TagsSorted=sort(TagsUnsorted);
+
+
+BFT=[];
+for i=1:length(TagsSorted);
+    BFT=[BFT;BFD(BFD(:,1)==TagsSorted(i),:)];
+end
+
+IAmTheRemover=ones(length(BFT),1);
+
+for i=2:length(BFT);
+    if BFT(i,1)==BFT(i-1,1) && BFT(i,2)==BFT(i-1,2) && BFT(i,3)==BFT(i-1,3) && BottomFish(i,4)==BFT(i-1,4) && BFT(i,5)==BFT(i-1,5) && BFT(i,6)==BFT(i-1,6) && BFT(i,7)==BFT(i-1,7) && BFT(i,8)==BFT(i-1,8);
+        IAmTheRemover(i)=0;
+    end
+end
+
+[Index,~]=find(IAmTheRemover(:,1)==1);
+BottomFish=BFT(Index,:);
+
+csvwrite('BottomFish.csv',BottomFish);
+
+%clearvars DetectionsByTagIDThenDate UniqueDetectionsPerFish i NonDuplicateData Dates Tags BFT ReceiverDateAdjustment Latitude Longitude SensorUnit i SensorValue StationName TransmitterName TransmitterSerial B  FT BFD IAmTheRemover TagsUnsorted TagsSorted DatesUnsorted DatesSorted i j k r t s a l I J K R T S A L t T Index NonDuplicateData Index TagsSorted TagsUnsorted DatesSorted DatesUnsorted A L l s b i AdjustedReceiverDeploymentsAndRecoveries DateTime FLcm Receiver ReceiverDeploymentsAndRecoveries Sex Sex1 Species StomachEverted TagID Tags TempReceiver TempSex TempSex1 TempTransmitter TemporaryReceiverDates Time Transmitter  VarName1 a ans
 
 save BottomFish 
 
@@ -458,7 +488,9 @@ toc
         
         
 %%%%%%%%%%%%%%%%%%%%Version Updates%%%%%%%%%%%%%%%%%%%%%%
-
+%%Updats in V_1.2
+    %%removes the same detections if vue file imported too many times. not
+    %%sure how this wasn't done sooner...
 %%Updates in v_1.0
     %%Code has been rewritten to eliminate excel data massage. Excel now only
     %%used to compile VUE files into one massive database. This step could
