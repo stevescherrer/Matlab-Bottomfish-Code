@@ -459,11 +459,14 @@ for i=2:length(BFT);
 end
 
 [Index,~]=find(IAmTheRemover(:,1)==1);
-BottomFish=BFT(Index,:);
+FullDatabase=BFT(Index,:);
+BottomFish=FullDatabase(isnan(FullDatabase(:,5)==0),:);
+
 
 csvwrite('BottomFish.csv',BottomFish);
+csvwrite('FullDatabase.csv',BottomFish);
 
-%clearvars DetectionsByTagIDThenDate UniqueDetectionsPerFish i NonDuplicateData Dates Tags BFT ReceiverDateAdjustment Latitude Longitude SensorUnit i SensorValue StationName TransmitterName TransmitterSerial B  FT BFD IAmTheRemover TagsUnsorted TagsSorted DatesUnsorted DatesSorted i j k r t s a l I J K R T S A L t T Index NonDuplicateData Index TagsSorted TagsUnsorted DatesSorted DatesUnsorted A L l s b i AdjustedReceiverDeploymentsAndRecoveries DateTime FLcm Receiver ReceiverDeploymentsAndRecoveries Sex Sex1 Species StomachEverted TagID Tags TempReceiver TempSex TempSex1 TempTransmitter TemporaryReceiverDates Time Transmitter  VarName1 a ans
+%clearvars DetectionsByTagIDThenDate UniqueDetectionsPerFish i NonDuplicateData Dates Tags BFT ReceiverDateAdjustment Latitude Longitude SensorUnit i SensorValue StationName TransmitterName TransmitterSerial B  FT BFD IAmTheRemover TagsUnsorted TagsSorted DatesUnsorted DatesSorted i j k r t s a l I J K R T S A L t T Index NonDuplicateData Index TagsSorted TagsUnsorted DatesSorted DatesUnsorted A L l s b i AdjustedReceiverDeploymentsAndRecoveries DateTime FLcm Receiver ReceiverDeploymentsAndRecoveries Sex Sex1 Species StomachEverted TagID Tags TempReceiver TempSex TempSex1 TempTransmitter TemporaryReceiverDates Time Transmitter VR2W VarName1 a ans
 
 save BottomFish 
 
@@ -488,6 +491,9 @@ toc
         
         
 %%%%%%%%%%%%%%%%%%%%Version Updates%%%%%%%%%%%%%%%%%%%%%%
+%%Updats in V_1.3
+    %%Two Files now output, one of all detections (FullDatabase) and one of
+    %%just our fish around Oahu and Penguin Banks (BottomFish)
 %%Updats in V_1.2
     %%removes the same detections if vue file imported too many times. not
     %%sure how this wasn't done sooner...
